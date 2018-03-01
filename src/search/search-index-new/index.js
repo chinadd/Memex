@@ -2,12 +2,32 @@ import normalizeUrl from 'src/util/encode-url-for-id'
 import Storage from './storage'
 import { Page } from './models'
 import pipeline from './pipeline'
+import { keyGen } from '../util'
 import QueryBuilder from '../query-builder'
 import fetchPageData from 'src/page-analysis/background/fetch-page-data'
 import analysePage from 'src/page-analysis/background'
 
 // Create main singleton to interact with DB in the ext
-const db = new Storage()
+let realDB
+export function init(storageParams = Storage.DEF_PARAMS) {
+    realDB = new Storage(storageParams)
+}
+const db = new Proxy(
+    {},
+    {
+        get: (target, key) => {
+            if (!realDB) {
+                init()
+            }
+
+            let prop = realDB[key]
+            if (typeof prop === 'function') {
+                prop = prop.bind(realDB)
+            }
+            return prop
+        },
+    },
+)
 export default db
 
 //
