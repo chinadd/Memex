@@ -14,6 +14,7 @@ import browserify from 'browserify'
 import gulpSeq from 'gulp-sequence'
 import watchify from 'watchify'
 import babelify from 'babelify'
+import tsify from 'tsify'
 import envify from 'loose-envify/custom'
 import eslint from 'gulp-eslint'
 import path from 'path'
@@ -101,6 +102,7 @@ async function createBundle(
         }),
         { global: true },
     )
+    b.plugin(tsify)
 
     if (cssOutput) {
         b.plugin(cssModulesify, {
