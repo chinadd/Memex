@@ -2,13 +2,14 @@
 
 import memdown from 'memdown'
 import encode from 'encoding-down'
-import fakeIDBFactory from 'fake-indexeddb'
-import fakeIDBKeyRange from 'fake-indexeddb/lib/FDBKeyRange'
+import * as fakeIDBFactory from 'fake-indexeddb'
+import * as fakeIDBKeyRange from 'fake-indexeddb/lib/FDBKeyRange'
 import * as search from './'
 import * as oldIndex from './search-index-old'
 import { exportPages as exportOldPages } from './search-index-old/export'
 import { importPage as importNewPage } from './search-index-new/import'
 import * as newIndex from './search-index-new'
+import { global } from 'core-js/library/web/timers';
 
 async function doIntegrationTest() {
     const visit1 = Date.now().toString()
@@ -191,7 +192,7 @@ describe('New search index', () => {
             dbName: 'dexie',
         })
         await importNewPage({
-            url: 'https://test.com',
+            url: 'https://www.test.com?q=test',
             content: {
                 title: 'very interesting futile title',
                 fullText: 'body text with some useless filling stuff',
@@ -200,10 +201,15 @@ describe('New search index', () => {
             tags: [],
             bookmark: null
         })
-        // const { docs: results } = await search.search({
-        //     query: 'fox',
-        //     mapResultsFunc: async results => results,
-        // })
-        // console.log(results)
+        const { docs: results } = await search.search({
+            query: 'interesting',
+            mapResultsFunc: async results => results,
+        })
+        expect(results).toEqual([
+            expect.objectContaining({
+                url: 'https://www.test.com?q=test',
+                title: 'very interesting futile title'
+            })
+        ])
     })
 })
